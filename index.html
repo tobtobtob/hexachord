@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Hexachord</title>
+  </head>
+  <body>
+    <div id="elm"></div>
+    <script src="main.js"></script>
+    <script>
+      var app = Elm.Main.init({
+        node: document.getElementById('elm'),
+      })
+      var audioContext;
+      // var oscillator = null
+
+      // duration in milliseconds
+      function start(frequency) {
+        if (!audioContext) {
+          audioContext = new AudioContext();
+        }
+        var vco = audioContext.createOscillator();
+        vco.type = 'triangle';
+        vco.frequency.value = frequency;
+
+        /* VCA */
+        var vca = audioContext.createGain();
+        vca.gain.value = 0.3;
+
+        /* connections */
+        vco.connect(vca);
+        vca.connect(audioContext.destination);
+
+        vco.start(0);
+        var now = audioContext.currentTime
+        vca.gain.linearRampToValueAtTime(0, audioContext.currentTime + 1);
+        vco.stop(now + 1);
+        /**
+        window.setTimeout(function(){
+          vco.stop(0)
+        }, 2000)*/
+      }
+/**
+      function stop() {
+        oscillator && oscillator.stop(0)
+        oscillator = null
+      }*/
+
+      app.ports.startRaw.subscribe(function (frequency) {
+        start(frequency);
+      });
+/**
+      app.ports.stopRaw.subscribe(function () {
+        stop();
+      });*/
+    </script>
+  </body>
+</html>
