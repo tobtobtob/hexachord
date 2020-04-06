@@ -5,6 +5,7 @@ module Main exposing (..)
 import Browser
 
 import Html exposing (Html)
+import Html.Events
 import Svg exposing (..)
 import Svg.Attributes
 import Svg.Events
@@ -28,19 +29,27 @@ main =
     , update = update
     }
 
+type State = Running | Paused
+
 type alias Model = 
   { hexMap : Map
   , activator : Activator.Activator
-  , tokenMap : Tokens.TokenMap }
+  , tokenMap : Tokens.TokenMap
+  , state: State }
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
-  Time.every 1000 (\_ -> Tick)
+subscriptions model =
+  case model.state of
+      Running ->
+        Time.every 1000 (\_ -> Tick)
+      Paused ->
+        Sub.none
 
 init : () -> (Model, Cmd Msg)
 init _ = ({ hexMap = rectangularPointyTopMap 5 10
   , activator =  Activator.init
-  , tokenMap = Tokens.init } , Cmd.none)
+  , tokenMap = Tokens.init
+  , state = Paused } , Cmd.none)
 
 update: Msg.Msg -> Model -> (Model, Cmd Msg)
 update msg model = 
@@ -48,14 +57,21 @@ update msg model =
     PlayNote hex ->
       (model, Cmds.start (Notes.hexToTone hex))
     Tick ->
-      ({ model | activator = Activator.moveActivator model.tokenMap model.activator }, Cmds.start (Debug.log "tick note" (Notes.locationToTone (Debug.log "ACTIVATOR LOC" model.activator.location))))
+      let
+        newActivator = Activator.moveActivator model.tokenMap model.activator
+      in 
+        ({ model | activator = newActivator}, Cmds.start (Notes.locationToTone newActivator.location))
+    Start ->
+      ({ model | state = Running }, Cmd.none)
+    Stop ->
+      ({ model | state = Paused }, Cmd.none)
     NoOp ->
       (model, Cmd.none)
 
 layout: Layout
 layout = 
   {   orientation = orientationLayoutPointy
-    , size = (100, 100)
+    , size = (75, 75)
     , origin = (100,100)
   }
 
@@ -110,11 +126,32 @@ drawHex activator tokenMap hex =
     Nothing ->
       svgPolygon activator hex
 
-view : Model -> Html Msg
-view { hexMap, activator, tokenMap} =
+viewMap : Model -> Html Msg
+viewMap { hexMap, activator, tokenMap} =
   svg
     [ Svg.Attributes.viewBox "0 0 1600 1600"
     , Svg.Attributes.width "1000"
     , Svg.Attributes.height "800"
     ]
     (List.map (drawHex activator tokenMap) (Dict.values hexMap))
+
+startButton : State -> Html Msg
+startButton state =
+  case state of
+    Running ->
+      Html.button [Html.Events.onClick Stop] [text "Stop"]
+    Paused ->
+      Html.button [Html.Events.onClick Start] [text "Start"]
+
+viewControls : Model -> Html Msg
+viewControls model =
+  Html.div
+    []
+    [startButton model.state]
+
+view : Model -> Html Msg
+view model =
+  Html.div
+    []
+    [ viewControls model
+    , viewMap model ]
