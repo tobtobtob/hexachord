@@ -5,6 +5,7 @@ import Hexagons.Hex exposing (Hex)
 import Hexagons.Map exposing (hashHex)
 import Directions
 import Tokens
+import TokenMap
 
 type alias Activator = 
   { direction : Directions.Direction
@@ -18,12 +19,15 @@ isActive : Hex -> Activator -> Bool
 isActive hex activator =
   hashHex hex == activator.location
           
-moveActivator : Tokens.TokenMap -> Activator -> Activator
+moveActivator : TokenMap.TokenMap -> Activator -> Activator
 moveActivator tokenMap { direction, location } =
   case Dict.get location tokenMap of
     Just (Tokens.ArrowHead tokenDirection) -> 
       { direction = tokenDirection
-      , location = Directions.moveLocation tokenDirection location}
+      , location = Directions.moveLocation tokenDirection location }
+    Just (Tokens.Starter tokenDirection) ->
+      { direction = tokenDirection
+      , location = Directions.moveLocation tokenDirection location }
     Nothing ->
       { direction = direction
       , location = Directions.moveLocation direction location}

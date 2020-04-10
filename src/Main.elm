@@ -6,6 +6,7 @@ import Browser
 
 import Html exposing (Html)
 import Html.Events
+import Html.Attributes
 import Svg exposing (..)
 import Svg.Attributes
 import Svg.Events
@@ -18,6 +19,8 @@ import Cmds
 import Time
 import Activator
 import Tokens
+import Directions
+import TokenMap
 import Msg exposing (Msg(..))
 
 
@@ -31,11 +34,14 @@ main =
 
 type State = Running | Paused
 
+type TokenTool = Maybe Tokens.Token
+
 type alias Model = 
   { hexMap : Map
   , activator : Activator.Activator
-  , tokenMap : Tokens.TokenMap
-  , state: State }
+  , tokenMap : TokenMap.TokenMap
+  , state : State 
+  , tokenTool : Maybe Tokens.Token }
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -48,14 +54,21 @@ subscriptions model =
 init : () -> (Model, Cmd Msg)
 init _ = ({ hexMap = rectangularPointyTopMap 5 10
   , activator =  Activator.init
-  , tokenMap = Tokens.init
-  , state = Paused } , Cmd.none)
+  , tokenMap = TokenMap.init
+  , state = Paused 
+  , tokenTool = Nothing } , Cmd.none)
+
+hexToLocation : Hexagons.Hex.Hex -> (Int, Int, Int)
+hexToLocation hex = 
+  (Hexagons.Hex.intQ hex
+  , Hexagons.Hex.intR hex
+  , Hexagons.Hex.intS hex)
 
 update: Msg.Msg -> Model -> (Model, Cmd Msg)
 update msg model = 
   case msg of
     PlayNote hex ->
-      (model, Cmds.start (Notes.hexToTone hex))
+      ({ model | tokenMap = TokenMap.addOrRotateToken model.tokenMap (hexToLocation hex) model.tokenTool}, Cmds.start (Notes.hexToTone hex))
     Tick ->
       let
         newActivator = Activator.moveActivator model.tokenMap model.activator
@@ -65,6 +78,15 @@ update msg model =
       ({ model | state = Running }, Cmd.none)
     Stop ->
       ({ model | state = Paused }, Cmd.none)
+    SelectTokenTool tokenType ->
+      case tokenType of
+        "ArrowHead" ->
+          ({model | tokenTool = Just (Tokens.ArrowHead Directions.FifthUp)}, Cmd.none)
+        "Starter" ->
+          ({model | tokenTool = Just (Tokens.Starter Directions.FifthUp)}, Cmd.none)
+        _ ->
+          ({model | tokenTool = Nothing}, Cmd.none)
+        
     NoOp ->
       (model, Cmd.none)
 
@@ -115,10 +137,10 @@ svgTokenHex activator hex token =
         , Svg.Events.onClick (PlayNote hex)
         ]
         []
-    , Tokens.svgToken layout hex token
+    , TokenMap.svgToken layout hex token
     ]
 
-drawHex : Activator.Activator -> Tokens.TokenMap -> Hex -> Svg Msg
+drawHex : Activator.Activator -> TokenMap.TokenMap -> Hex -> Svg Msg
 drawHex activator tokenMap hex =
   case Dict.get (hashHex hex) tokenMap of
     Just token ->
@@ -147,7 +169,21 @@ viewControls : Model -> Html Msg
 viewControls model =
   Html.div
     []
-    [startButton model.state]
+    [startButton model.state,
+    tokenSelector model]
+
+
+
+tokenSelector: Model -> Html Msg
+tokenSelector model =
+    Html.div []
+        [ Html.select [Html.Events.onInput SelectTokenTool]
+            [ text "Set option: "
+            , Html.option [Html.Attributes.value "Starter"] [text "Starter"]
+            , Html.option [Html.Attributes.value "ArrowHead"] [text "Arrowhead"]
+            , Html.option [Html.Attributes.value "None"] [text "None"]
+            ]
+        ]
 
 view : Model -> Html Msg
 view model =
@@ -155,3 +191,4 @@ view model =
     []
     [ viewControls model
     , viewMap model ]
+
