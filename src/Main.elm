@@ -21,6 +21,7 @@ import Activator
 import Tokens
 import Directions
 import TokenMap
+import Layout
 import Msg exposing (Msg(..))
 
 
@@ -38,7 +39,7 @@ type TokenTool = Maybe Tokens.Token
 
 type alias Model = 
   { hexMap : Map
-  , activator : Activator.Activator
+  , activators : Activator.Activators
   , tokenMap : TokenMap.TokenMap
   , state : State 
   , tokenTool : Maybe Tokens.Token }
@@ -47,13 +48,13 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
   case model.state of
       Running ->
-        Time.every 1000 (\_ -> Tick)
+        Time.every 250 (\_ -> Tick)
       Paused ->
         Sub.none
 
 init : () -> (Model, Cmd Msg)
 init _ = ({ hexMap = rectangularPointyTopMap 5 10
-  , activator =  Activator.init
+  , activators =  Activator.init
   , tokenMap = TokenMap.init
   , state = Paused 
   , tokenTool = Nothing } , Cmd.none)
@@ -71,11 +72,11 @@ update msg model =
       ({ model | tokenMap = TokenMap.addOrRotateToken model.tokenMap (hexToLocation hex) model.tokenTool}, Cmds.start (Notes.hexToTone hex))
     Tick ->
       let
-        newActivator = Activator.moveActivator model.tokenMap model.activator
+        newActivators = Activator.moveActivators model.tokenMap model.activators
       in 
-        ({ model | activator = newActivator}, Cmds.start (Notes.locationToTone newActivator.location))
+        ({ model | activators = newActivators}, Cmd.batch (Activator.playActivators newActivators model.tokenMap))
     Start ->
-      ({ model | state = Running }, Cmd.none)
+      ({ model | state = Running, activators = Activator.initActivators model.tokenMap }, Cmd.none)
     Stop ->
       ({ model | state = Paused }, Cmd.none)
     SelectTokenTool tokenType ->
@@ -90,27 +91,20 @@ update msg model =
     NoOp ->
       (model, Cmd.none)
 
-layout: Layout
-layout = 
-  {   orientation = orientationLayoutPointy
-    , size = (75, 75)
-    , origin = (100,100)
-  }
-
 cornerListString: Hex -> String
 cornerListString hex =
-  hex |> polygonCorners layout |> List.map (\(a, b) -> String.fromFloat a ++ "," ++ String.fromFloat b) |> String.join ","
+  hex |> polygonCorners Layout.layout |> List.map (\(a, b) -> String.fromFloat a ++ "," ++ String.fromFloat b) |> String.join ","
 
-svgPolygon: Activator.Activator -> Hex -> Svg Msg
-svgPolygon activator hex =
+svgPolygon: Activator.Activators -> Hex -> Svg Msg
+svgPolygon activators hex =
   let
-      (x, y) = Hexagons.Layout.hexToPoint layout hex
+      (x, y) = Hexagons.Layout.hexToPoint Layout.layout hex
   in
     svg
       []
       [ polygon
           [ Svg.Attributes.stroke "blue"
-          , Svg.Attributes.fill (if Activator.isActive hex activator then "yellow" else "orange")
+          , Svg.Attributes.fill (if Activator.isActive hex activators then "yellow" else "orange")
           , Svg.Attributes.strokeWidth "3"
           , Svg.Attributes.points (cornerListString hex)
           , Svg.Events.onClick (PlayNote hex)
@@ -125,37 +119,37 @@ svgPolygon activator hex =
           text (" " ++ String.fromFloat (Notes.toneToFreq (Notes.hexToTone hex))) ]
       ]
 
-svgTokenHex: Activator.Activator -> Hex -> Tokens.Token -> Svg Msg
-svgTokenHex activator hex token =
+svgTokenHex: Activator.Activators -> Hex -> Tokens.Token -> Svg Msg
+svgTokenHex activators hex token =
   svg
     []
     [ polygon
         [ Svg.Attributes.stroke "blue"
-        , Svg.Attributes.fill (if Activator.isActive hex activator then "yellow" else "orange")
+        , Svg.Attributes.fill (if Activator.isActive hex activators then "yellow" else "orange")
         , Svg.Attributes.strokeWidth "3"
         , Svg.Attributes.points (cornerListString hex)
         , Svg.Events.onClick (PlayNote hex)
         ]
         []
-    , TokenMap.svgToken layout hex token
+    , Tokens.svgToken hex token
     ]
 
-drawHex : Activator.Activator -> TokenMap.TokenMap -> Hex -> Svg Msg
-drawHex activator tokenMap hex =
+drawHex : Activator.Activators -> TokenMap.TokenMap -> Hex -> Svg Msg
+drawHex activators tokenMap hex =
   case Dict.get (hashHex hex) tokenMap of
     Just token ->
-      svgTokenHex activator hex token
+      svgTokenHex activators hex token
     Nothing ->
-      svgPolygon activator hex
+      svgPolygon activators hex
 
 viewMap : Model -> Html Msg
-viewMap { hexMap, activator, tokenMap} =
+viewMap { hexMap, activators, tokenMap} =
   svg
     [ Svg.Attributes.viewBox "0 0 1600 1600"
     , Svg.Attributes.width "1000"
     , Svg.Attributes.height "800"
     ]
-    (List.map (drawHex activator tokenMap) (Dict.values hexMap))
+    (List.map (drawHex activators tokenMap) (Dict.values hexMap))
 
 startButton : State -> Html Msg
 startButton state =

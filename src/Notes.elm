@@ -3,7 +3,6 @@ module Notes exposing (Note, Tone, noteToFreq, toneToFreq, hexToNote, hexToTone,
 import Hexagons.Hex exposing (Hex)
 import Array
 
-type alias Octave = Int
 type alias Tone = (Note, Int)
 
 type Note = C | Cis | D | Eb | E | F | Fis | G | Ab | A | Bb | B  
