@@ -53,7 +53,7 @@ subscriptions model =
         Sub.none
 
 init : () -> (Model, Cmd Msg)
-init _ = ({ hexMap = rectangularPointyTopMap 5 10
+init _ = ({ hexMap = rectangularPointyTopMap 7 12
   , activators =  Activator.init
   , tokenMap = TokenMap.init
   , state = Paused 
@@ -145,9 +145,9 @@ drawHex activators tokenMap hex =
 viewMap : Model -> Html Msg
 viewMap { hexMap, activators, tokenMap} =
   svg
-    [ Svg.Attributes.viewBox "0 0 1600 1600"
-    , Svg.Attributes.width "1000"
-    , Svg.Attributes.height "800"
+    [ Svg.Attributes.viewBox "0 0 1800 1200"
+     --Svg.Attributes.width "100%"
+    --, Svg.Attributes.height "100%"
     ]
     (List.map (drawHex activators tokenMap) (Dict.values hexMap))
 
