@@ -3,6 +3,8 @@ module TokenMap exposing (TokenMap, init, hasToken, addOrRotateToken)
 import Directions
 import Dict
 import Tokens exposing (Token(..))
+import Svg exposing (Svg)
+import Msg exposing (Msg)
 
 
 type alias TokenMap = Dict.Dict (Int, Int, Int) Token

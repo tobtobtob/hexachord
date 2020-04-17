@@ -104,7 +104,7 @@ svgPolygon activators hex =
       []
       [ polygon
           [ Svg.Attributes.stroke "blue"
-          , Svg.Attributes.fill (if Activator.isActive hex activators then "yellow" else "orange")
+          , Svg.Attributes.fill "orange"
           , Svg.Attributes.strokeWidth "3"
           , Svg.Attributes.points (cornerListString hex)
           , Svg.Events.onClick (PlayNote hex)
@@ -125,7 +125,7 @@ svgTokenHex activators hex token =
     []
     [ polygon
         [ Svg.Attributes.stroke "blue"
-        , Svg.Attributes.fill (if Activator.isActive hex activators then "yellow" else "orange")
+        , Svg.Attributes.fill  "orange"
         , Svg.Attributes.strokeWidth "3"
         , Svg.Attributes.points (cornerListString hex)
         , Svg.Events.onClick (PlayNote hex)
@@ -149,7 +149,8 @@ viewMap { hexMap, activators, tokenMap} =
      --Svg.Attributes.width "100%"
     --, Svg.Attributes.height "100%"
     ]
-    (List.map (drawHex activators tokenMap) (Dict.values hexMap))
+    (List.map (drawHex activators tokenMap) (Dict.values hexMap) ++
+    Activator.viewActivators activators hexMap)
 
 startButton : State -> Html Msg
 startButton state =

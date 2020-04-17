@@ -1,16 +1,23 @@
-module Activator exposing (Activators, init, initActivators, moveActivators, playActivators, isActive)
+module Activator exposing (Activators, init, initActivators, moveActivators, playActivators, isActive, viewActivators)
 
 import Dict
 import Set
 import Hexagons.Hex exposing (Hex)
 import Hexagons.Map exposing (hashHex)
+import Hexagons.Layout
 import Directions
 import Tokens
 import TokenMap
-import Msg
+import Msg exposing(Msg)
 import List
 import Notes
 import Cmds
+import Svg exposing (Svg)
+import Svg.Attributes
+import Svg.Events
+import Dict
+import Layout
+import Util
 
 type alias Activator = (String, (Int, Int, Int)) 
   --{ direction : String
@@ -65,3 +72,27 @@ playActivators activators tokenMap =
     noteList = List.map Notes.locationToTone filteredList
   in
     List.map Cmds.start noteList
+
+svgActivator: Hex -> Svg Msg
+svgActivator hex =
+  Svg.svg
+    []
+    [ Svg.polygon
+      [ Svg.Attributes.stroke "blue"
+      , Svg.Attributes.fill "yellow"
+      , Svg.Attributes.strokeWidth "3"
+      , Svg.Attributes.points (Util.pointsToString (Hexagons.Layout.polygonCorners Layout.layout hex))
+      , Svg.Events.onClick (Msg.PlayNote hex)
+      ]
+      []
+    ]
+
+
+
+viewActivators : Activators -> Hexagons.Map.Map -> List (Svg Msg) 
+viewActivators activators hexMap =
+  let
+    activatorLocations = List.map (\(a, b) -> b) (Set.toList activators)
+    hexList = List.map (\location -> Dict.get location hexMap) activatorLocations
+  in
+    List.map svgActivator (Util.catMaybes hexList)
