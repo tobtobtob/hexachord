@@ -95,8 +95,8 @@ cornerListString: Hex -> String
 cornerListString hex =
   hex |> polygonCorners Layout.layout |> List.map (\(a, b) -> String.fromFloat a ++ "," ++ String.fromFloat b) |> String.join ","
 
-svgPolygon: Activator.Activators -> Hex -> Svg Msg
-svgPolygon activators hex =
+viewHex: Hex -> Svg Msg
+viewHex hex =
   let
       (x, y) = Hexagons.Layout.hexToPoint Layout.layout hex
   in
@@ -119,29 +119,6 @@ svgPolygon activators hex =
           text (" " ++ String.fromFloat (Notes.toneToFreq (Notes.hexToTone hex))) ]
       ]
 
-svgTokenHex: Activator.Activators -> Hex -> Tokens.Token -> Svg Msg
-svgTokenHex activators hex token =
-  svg
-    []
-    [ polygon
-        [ Svg.Attributes.stroke "blue"
-        , Svg.Attributes.fill  "orange"
-        , Svg.Attributes.strokeWidth "3"
-        , Svg.Attributes.points (cornerListString hex)
-        , Svg.Events.onClick (PlayNote hex)
-        ]
-        []
-    , Tokens.svgToken hex token
-    ]
-
-drawHex : Activator.Activators -> TokenMap.TokenMap -> Hex -> Svg Msg
-drawHex activators tokenMap hex =
-  case Dict.get (hashHex hex) tokenMap of
-    Just token ->
-      svgTokenHex activators hex token
-    Nothing ->
-      svgPolygon activators hex
-
 viewMap : Model -> Html Msg
 viewMap { hexMap, activators, tokenMap} =
   svg
@@ -149,8 +126,9 @@ viewMap { hexMap, activators, tokenMap} =
      --Svg.Attributes.width "100%"
     --, Svg.Attributes.height "100%"
     ]
-    (List.map (drawHex activators tokenMap) (Dict.values hexMap) ++
-    Activator.viewActivators activators hexMap)
+    (List.map viewHex (Dict.values hexMap) ++
+    Activator.viewActivators activators hexMap ++
+    TokenMap.viewTokens tokenMap hexMap)
 
 startButton : State -> Html Msg
 startButton state =

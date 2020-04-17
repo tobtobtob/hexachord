@@ -1,10 +1,12 @@
-module TokenMap exposing (TokenMap, init, hasToken, addOrRotateToken)
+module TokenMap exposing (TokenMap, init, hasToken, addOrRotateToken, viewTokens)
 
 import Directions
 import Dict
+import Hexagons.Map
 import Tokens exposing (Token(..))
 import Svg exposing (Svg)
 import Msg exposing (Msg)
+import Util
 
 
 type alias TokenMap = Dict.Dict (Int, Int, Int) Token
@@ -37,3 +39,18 @@ addOrRotateToken tokenMap location token =
         Dict.update location (\_ -> Just (Starter (Directions.rotateClockWise oldDirection))) tokenMap
       (_, _) ->
         tokenMap
+
+
+viewTokens : TokenMap -> Hexagons.Map.Map -> List (Svg Msg)
+viewTokens tokenMap hexMap =
+  let
+    tokenLocations = Dict.keys tokenMap
+    maybeSvg = \(hex, token) ->
+      case (hex, token) of
+        ((Just hex2), (Just token2)) ->
+          Just (Tokens.svgToken hex2 token2)
+        _ ->
+          Nothing
+    maybeHexToken = List.map (\location -> (Dict.get location hexMap, Dict.get location tokenMap)) tokenLocations
+  in
+    Util.catMaybes (List.map maybeSvg maybeHexToken)

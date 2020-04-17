@@ -92,7 +92,7 @@ svgActivator hex =
 viewActivators : Activators -> Hexagons.Map.Map -> List (Svg Msg) 
 viewActivators activators hexMap =
   let
-    activatorLocations = List.map (\(a, b) -> b) (Set.toList activators)
+    activatorLocations = List.map (\(_, b) -> b) (Set.toList activators)
     hexList = List.map (\location -> Dict.get location hexMap) activatorLocations
   in
     List.map svgActivator (Util.catMaybes hexList)
