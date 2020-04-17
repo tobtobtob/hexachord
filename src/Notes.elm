@@ -42,17 +42,6 @@ toneToFreq (note, octave) =
 noteOrder : Array.Array Note
 noteOrder = Array.fromList [C, Cis, D, Eb, E, F, Fis, G, Ab, A, Bb, B]
 
-hexToNote : Hex -> Note
-hexToNote hex =
-  let
-    q = Hexagons.Hex.intQ hex * 7
-    r = Hexagons.Hex.intR hex * 3
-    s = Hexagons.Hex.intS hex * 10
-    interval = modBy 12 (abs (q + r + s))
-  in 
-    case Array.get interval noteOrder of
-      Just note -> note
-      Nothing -> C
 
 locationToTone : (Int, Int, Int) -> Tone
 locationToTone (q, r, s) =
@@ -73,6 +62,13 @@ hexToTone hex =
     s = Hexagons.Hex.intS hex
   in 
     locationToTone (q, r, s)
+
+hexToNote : Hex -> Note
+hexToNote hex =
+  let
+    (note, _) = hexToTone hex
+  in
+    note
 
      
 noteToString : Note -> String

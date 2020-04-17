@@ -1,15 +1,14 @@
 
 
-module Main exposing (..)
+module Main exposing (main)
 
 import Browser
 
 import Html exposing (Html)
 import Html.Events
 import Html.Attributes
-import Svg exposing (..)
+import Svg
 import Svg.Attributes
-import Svg.Events
 import Hexagons.Hex exposing (..)
 import Hexagons.Layout exposing (..)
 import Hexagons.Map exposing (..)
@@ -21,8 +20,8 @@ import Activator
 import Tokens
 import Directions
 import TokenMap
-import Layout
 import Msg exposing (Msg(..))
+import HexMap
 
 
 main = 
@@ -35,7 +34,6 @@ main =
 
 type State = Running | Paused
 
-type TokenTool = Maybe Tokens.Token
 
 type alias Model = 
   { hexMap : Map
@@ -57,7 +55,7 @@ init _ = ({ hexMap = rectangularPointyTopMap 7 12
   , activators =  Activator.init
   , tokenMap = TokenMap.init
   , state = Paused 
-  , tokenTool = Nothing } , Cmd.none)
+  , tokenTool = Just (Tokens.ArrowHead Directions.FifthUp) } , Cmd.none)
 
 hexToLocation : Hexagons.Hex.Hex -> (Int, Int, Int)
 hexToLocation hex = 
@@ -91,52 +89,26 @@ update msg model =
     NoOp ->
       (model, Cmd.none)
 
-cornerListString: Hex -> String
-cornerListString hex =
-  hex |> polygonCorners Layout.layout |> List.map (\(a, b) -> String.fromFloat a ++ "," ++ String.fromFloat b) |> String.join ","
-
-viewHex: Hex -> Svg Msg
-viewHex hex =
-  let
-      (x, y) = Hexagons.Layout.hexToPoint Layout.layout hex
-  in
-    svg
-      []
-      [ polygon
-          [ Svg.Attributes.stroke "blue"
-          , Svg.Attributes.fill "orange"
-          , Svg.Attributes.strokeWidth "3"
-          , Svg.Attributes.points (cornerListString hex)
-          , Svg.Events.onClick (PlayNote hex)
-          ]
-          []
-      , text_
-          [ Svg.Attributes.fill "white"
-          , Svg.Attributes.x (String.fromFloat x)
-          , Svg.Attributes.y (String.fromFloat y)
-          , Svg.Attributes.fontSize "20" ]
-          [ text (Notes.toneToString <| Notes.hexToTone <| hex),
-          text (" " ++ String.fromFloat (Notes.toneToFreq (Notes.hexToTone hex))) ]
-      ]
-
 viewMap : Model -> Html Msg
 viewMap { hexMap, activators, tokenMap} =
-  svg
+  Svg.svg
     [ Svg.Attributes.viewBox "0 0 1800 1200"
      --Svg.Attributes.width "100%"
     --, Svg.Attributes.height "100%"
     ]
-    (List.map viewHex (Dict.values hexMap) ++
+    (List.map HexMap.viewHex (Dict.values hexMap) ++
     Activator.viewActivators activators hexMap ++
-    TokenMap.viewTokens tokenMap hexMap)
+    TokenMap.viewTokens tokenMap hexMap ++
+    List.map HexMap.viewTone (Dict.values hexMap) ++
+    List.map HexMap.viewClickableHex (Dict.values hexMap)) 
 
 startButton : State -> Html Msg
 startButton state =
   case state of
     Running ->
-      Html.button [Html.Events.onClick Stop] [text "Stop"]
+      Html.button [Html.Events.onClick Stop] [Svg.text "Stop"]
     Paused ->
-      Html.button [Html.Events.onClick Start] [text "Start"]
+      Html.button [Html.Events.onClick Start] [Svg.text "Start"]
 
 viewControls : Model -> Html Msg
 viewControls model =
@@ -151,10 +123,10 @@ tokenSelector: Model -> Html Msg
 tokenSelector model =
     Html.div []
         [ Html.select [Html.Events.onInput SelectTokenTool]
-            [ text "Set option: "
-            , Html.option [Html.Attributes.value "Starter"] [text "Starter"]
-            , Html.option [Html.Attributes.value "ArrowHead"] [text "Arrowhead"]
-            , Html.option [Html.Attributes.value "None"] [text "None"]
+            [ Svg.text "Set option: "
+            , Html.option [Html.Attributes.value "ArrowHead"] [Svg.text "Arrowhead"]
+            , Html.option [Html.Attributes.value "Starter"] [Svg.text "Starter"]
+            , Html.option [Html.Attributes.value "None"] [Svg.text "None"]
             ]
         ]
 
