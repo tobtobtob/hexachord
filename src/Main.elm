@@ -22,6 +22,7 @@ import Directions
 import TokenMap
 import Msg exposing (Msg(..))
 import HexMap
+import Colors
 
 
 main = 
@@ -40,13 +41,14 @@ type alias Model =
   , activators : Activator.Activators
   , tokenMap : TokenMap.TokenMap
   , state : State 
-  , tokenTool : Maybe Tokens.Token }
+  , tokenTool : Maybe Tokens.Token
+  , tempo : Int }
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
   case model.state of
       Running ->
-        Time.every 250 (\_ -> Tick)
+        Time.every ((60 / toFloat model.tempo) * 1000) (\_ -> Tick)
       Paused ->
         Sub.none
 
@@ -55,7 +57,8 @@ init _ = ({ hexMap = rectangularPointyTopMap 7 12
   , activators =  Activator.init
   , tokenMap = TokenMap.init
   , state = Paused 
-  , tokenTool = Just (Tokens.ArrowHead Directions.FifthUp) } , Cmd.none)
+  , tokenTool = Just (Tokens.ArrowHead Directions.FifthUp)
+  , tempo = 250} , Cmd.none)
 
 hexToLocation : Hexagons.Hex.Hex -> (Int, Int, Int)
 hexToLocation hex = 
@@ -85,7 +88,12 @@ update msg model =
           ({model | tokenTool = Just (Tokens.Starter Directions.FifthUp)}, Cmd.none)
         _ ->
           ({model | tokenTool = Nothing}, Cmd.none)
-        
+    UpdateTempo tempo ->
+      case String.toInt tempo of
+        Just intTempo ->
+          ({model | tempo = intTempo  }, Cmd.none)
+        Nothing ->
+         (model, Cmd.none)
     NoOp ->
       (model, Cmd.none)
 
@@ -106,23 +114,29 @@ startButton : State -> Html Msg
 startButton state =
   case state of
     Running ->
-      Html.button [Html.Events.onClick Stop] [Svg.text "Stop"]
+      Html.button [Html.Events.onClick Stop,  Html.Attributes.style "padding-left" "10px"] [Svg.text "Stop"]
     Paused ->
-      Html.button [Html.Events.onClick Start] [Svg.text "Start"]
+      Html.button [Html.Events.onClick Start,  Html.Attributes.style "padding-left" "10px"] [Svg.text "Start"]
 
 viewControls : Model -> Html Msg
 viewControls model =
   Html.div
-    []
-    [startButton model.state,
-    tokenSelector model]
+    [ Html.Attributes.style "display" "flex"   
+    , Html.Attributes.style "background-color" Colors.controlsBackground 
+    ]
+    [ startButton model.state
+    , tokenSelector model
+    , viewTempoSlider model ]
 
 
 
 tokenSelector: Model -> Html Msg
-tokenSelector model =
-    Html.div []
-        [ Html.select [Html.Events.onInput SelectTokenTool]
+tokenSelector _ =
+    Html.div [ Html.Attributes.style "padding-left" "10px"
+             , Html.Attributes.style "padding-right" "10px"] 
+        [ 
+          Html.p [ Html.Attributes.style "margin" "0px"] [Html.text "Token type:"]
+        , Html.select [Html.Events.onInput SelectTokenTool]
             [ Svg.text "Set option: "
             , Html.option [Html.Attributes.value "ArrowHead"] [Svg.text "Arrowhead"]
             , Html.option [Html.Attributes.value "Starter"] [Svg.text "Starter"]
@@ -130,6 +144,20 @@ tokenSelector model =
             ]
         ]
 
+viewTempoSlider : Model -> Html Msg
+viewTempoSlider model =
+  Html.div [ Html.Attributes.style "padding-left" "10px"
+             , Html.Attributes.style "padding-right" "10px"]
+    [ Html.p [ Html.Attributes.style "margin" "0px"] [Html.text "Tempo"]
+    ,  Html.input
+      [ Html.Attributes.type_ "range"
+      , Html.Attributes.min "60"
+      , Html.Attributes.max "600"
+      , Html.Attributes.value  <| String.fromInt model.tempo
+      , Html.Events.onInput UpdateTempo 
+      ] []
+    ] 
+ 
 view : Model -> Html Msg
 view model =
   Html.div

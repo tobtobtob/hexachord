@@ -4,55 +4,76 @@
     <meta charset="utf-8">
     <title>Hexachord</title>
   </head>
-  <body>
+  <body style="background-color: steelblue; font-family: arial;">
+    <div id="synth" style="display: flex; background-color: paleturquoise;">
+      <div id="waveformcontainer" style="padding-left: 20px;">
+        <p style="margin: 0px;">Waveform:</p>
+        <select id="waveform">
+          <option value="sine">sine</option>
+          <option value="sawtooth">sawtooth</option>
+          <option value="square">square</option>
+          <option value="triangle">triangle</option>
+        </select></div>
+      <div id="filtercontainer" style="padding-left: 20px">
+        <p style="margin: 0px">Filter:</p>
+        <input type="range" min="1" max="100" value="50" class="slider" id="filter">
+      </div>
+      <div id="notelenghtcontainer" style="padding-left: 20px;">
+        <p style="margin: 0px">Note length:</p>
+        <input type="range" min="1" max="100" value="50" class="slider" id="notelength">
+      </div>
+    </div>
     <div id="elm"></div>
     <script src="main.js"></script>
     <script>
       var app = Elm.Main.init({
         node: document.getElementById('elm'),
       })
-      var audioContext;
-      // var oscillator = null
+      var audioContext  = new AudioContext();
 
-      // duration in milliseconds
+      var waveformSelector = document.getElementById('waveform');
+      var filterSlider = document.getElementById('filter');
+      var noteLengthSlider = document.getElementById('notelength');
+
+      function getNoteLength(){
+        return 2 * (0.01 * noteLengthSlider.value)
+      }
+
+      function setFilterFrequency(filter){
+        var percentage = filterSlider.value / 100.0;
+        var min = 120;
+        var filterFreq = Math.pow((audioContext.sampleRate/2.0-min), percentage)+min
+        filter.type = "lowpass";
+        filter.frequency.value = filterFreq;
+      }
+
       function start(frequency) {
-        if (!audioContext) {
-          audioContext = new AudioContext();
-        }
         var vco = audioContext.createOscillator();
-        vco.type = 'triangle';
+        vco.type = waveformSelector.value;
         vco.frequency.value = frequency;
 
-        /* VCA */
         var vca = audioContext.createGain();
         vca.gain.value = 0.3;
 
-        /* connections */
-        vco.connect(vca);
+        var filter = audioContext.createBiquadFilter();
+        setFilterFrequency(filter);
+
+        // create connections
+        vco.connect(filter)
+        filter.connect(vca)
         vca.connect(audioContext.destination);
 
         vco.start(0);
-        var now = audioContext.currentTime
-        vca.gain.linearRampToValueAtTime(0, audioContext.currentTime + 1);
-        vco.stop(now + 1);
-        /**
-        window.setTimeout(function(){
-          vco.stop(0)
-        }, 2000)*/
+        var now = audioContext.currentTime;
+        var noteLength = getNoteLength();
+        vca.gain.linearRampToValueAtTime(0, audioContext.currentTime + noteLength);
+        vco.stop(now + noteLength);
       }
-/**
-      function stop() {
-        oscillator && oscillator.stop(0)
-        oscillator = null
-      }*/
 
       app.ports.startRaw.subscribe(function (frequency) {
         start(frequency);
       });
-/**
-      app.ports.stopRaw.subscribe(function () {
-        stop();
-      });*/
+
     </script>
   </body>
 </html>

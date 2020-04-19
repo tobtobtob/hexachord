@@ -9,6 +9,7 @@ import Msg exposing (Msg)
 import Layout
 import Notes
 import Util
+import Colors
 
 
 viewHex: Hex -> Svg Msg
@@ -16,8 +17,8 @@ viewHex hex =
   Svg.svg
     []
     [ Svg.polygon
-        [ Svg.Attributes.stroke "blue"
-        , Svg.Attributes.fill "orange"
+        [ Svg.Attributes.stroke Colors.hexBorder
+        , Svg.Attributes.fill Colors.hex
         , Svg.Attributes.strokeWidth "3"
         , Svg.Attributes.points (Util.pointsToString (Hexagons.Layout.polygonCorners Layout.layout hex))
         ]

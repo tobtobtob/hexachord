@@ -8,6 +8,7 @@ import Svg exposing (Svg)
 import Svg.Attributes
 import Layout exposing (layout)
 import Util
+import Colors
 
 type Token = ArrowHead Direction | Starter Direction
 
@@ -76,7 +77,7 @@ starterHexSvg hex =
     []
     [ Svg.polygon
         [ Svg.Attributes.stroke "black"
-        , Svg.Attributes.fill "yellow"
+        , Svg.Attributes.fill Colors.activator
         , Svg.Attributes.strokeWidth "3"
         , Svg.Attributes.points (Util.pointsToString(smallHexPoints hex))
         ]

@@ -18,6 +18,7 @@ import Svg.Events
 import Dict
 import Layout
 import Util
+import Colors
 
 type alias Activator = (String, (Int, Int, Int)) 
   --{ direction : String
@@ -78,8 +79,8 @@ svgActivator hex =
   Svg.svg
     []
     [ Svg.polygon
-      [ Svg.Attributes.stroke "blue"
-      , Svg.Attributes.fill "yellow"
+      [ Svg.Attributes.stroke Colors.hexBorder
+      , Svg.Attributes.fill Colors.activator
       , Svg.Attributes.strokeWidth "3"
       , Svg.Attributes.points (Util.pointsToString (Hexagons.Layout.polygonCorners Layout.layout hex))
       , Svg.Events.onClick (Msg.PlayNote hex)
