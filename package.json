@@ -1,0 +1,27 @@
+{
+  "name": "hexaphone",
+  "version": "1.0.0",
+  "description": "An instrument/sequencer inspired by [Reactogon](https://www.youtube.com/watch?v=AklKy2NDpqs), written in Elm. Runs in browser.",
+  "main": "main.js",
+  "dependencies": {},
+  "devDependencies": {
+    "elm-hot": "^1.1.4",
+    "node-elm-compiler": "^5.0.4",
+    "parcel-bundler": "^1.12.4",
+    "src": "^1.1.2"
+  },
+  "scripts": {
+    "start": "parcel index.html",
+    "build": "parcel build index.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tobtobtob/hexachord.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tobtobtob/hexachord/issues"
+  },
+  "homepage": "https://github.com/tobtobtob/hexachord#readme"
+}

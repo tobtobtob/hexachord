@@ -2,11 +2,12 @@
 
 An instrument/sequencer inspired by [Reactogon](https://www.youtube.com/watch?v=AklKy2NDpqs), written in Elm. Runs in browser.
 
-## How to run
+## Run locally
 
 Install [Elm](https://elm-lang.org/)
 
 ```
-elm make src/Main.elm --output=main.js
+npm run build
+npm start
 ```
-Open `index.html`
+http://localhost:1234
