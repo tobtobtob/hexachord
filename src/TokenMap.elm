@@ -33,12 +33,10 @@ addOrRotateToken tokenMap location token =
         Dict.remove location tokenMap
       (Nothing, Just newToken) ->
         Dict.update location (\_ -> Just newToken) tokenMap
-      (Just (ArrowHead oldDirection), Just (ArrowHead _)) ->
+      (Just (ArrowHead oldDirection), Just _) ->
         Dict.update location (\_ -> Just (ArrowHead (Directions.rotateClockWise oldDirection))) tokenMap
-      (Just (Starter oldDirection), Just (Starter _)) ->
+      (Just (Starter oldDirection), Just _) ->
         Dict.update location (\_ -> Just (Starter (Directions.rotateClockWise oldDirection))) tokenMap
-      (_, _) ->
-        tokenMap
 
 
 viewTokens : TokenMap -> Hexagons.Map.Map -> List (Svg Msg)

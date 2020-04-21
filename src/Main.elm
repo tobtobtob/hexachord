@@ -100,10 +100,7 @@ update msg model =
 viewMap : Model -> Html Msg
 viewMap { hexMap, activators, tokenMap} =
   Svg.svg
-    [ Svg.Attributes.viewBox "0 0 1800 1200"
-     --Svg.Attributes.width "100%"
-    --, Svg.Attributes.height "100%"
-    ]
+    [ Svg.Attributes.viewBox "0 0 1800 1200" ]
     (List.map HexMap.viewHex (Dict.values hexMap) ++
     Activator.viewActivators activators hexMap ++
     TokenMap.viewTokens tokenMap hexMap ++
@@ -135,7 +132,7 @@ tokenSelector _ =
     Html.div [ Html.Attributes.style "padding-left" "10px"
              , Html.Attributes.style "padding-right" "10px"] 
         [ 
-          Html.p [ Html.Attributes.style "margin" "0px"] [Html.text "Token type:"]
+          Html.p [ Html.Attributes.style "margin" "0px"] [Html.text "Token type"]
         , Html.select [Html.Events.onInput SelectTokenTool]
             [ Svg.text "Set option: "
             , Html.option [Html.Attributes.value "ArrowHead"] [Svg.text "Arrowhead"]

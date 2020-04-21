@@ -52,16 +52,14 @@ directionArrowSvg hex direction =
     arrowPoints = directionArrowPoints hex direction
     arrowPointsString = Util.pointsToString arrowPoints
   in
-    Svg.svg
-      []
-      [ Svg.polygon
-          [ Svg.Attributes.stroke "black"
-          , Svg.Attributes.fill "gray"
-          , Svg.Attributes.strokeWidth "3"
-          , Svg.Attributes.points arrowPointsString
-          ]
-          []
+    Svg.polygon
+      [ Svg.Attributes.stroke "black"
+      , Svg.Attributes.fill "gray"
+      , Svg.Attributes.strokeWidth "3"
+      , Svg.Attributes.points arrowPointsString
       ]
+      []
+      
 
 smallHexPoints : Hex -> List (Float, Float)
 smallHexPoints hex =
@@ -73,25 +71,21 @@ smallHexPoints hex =
 
 starterHexSvg : Hex -> Svg Msg
 starterHexSvg hex =
-  Svg.svg
-    []
-    [ Svg.polygon
-        [ Svg.Attributes.stroke "black"
-        , Svg.Attributes.fill Colors.activator
-        , Svg.Attributes.strokeWidth "3"
-        , Svg.Attributes.points (Util.pointsToString(smallHexPoints hex))
-        ]
-        []
+  Svg.polygon
+    [ Svg.Attributes.stroke "black"
+    , Svg.Attributes.fill Colors.activator
+    , Svg.Attributes.strokeWidth "3"
+    , Svg.Attributes.points (Util.pointsToString(smallHexPoints hex))
     ]
+    []
+    
 
 
 svgToken : Hex -> Token -> Svg Msg
 svgToken hex token =
   case token of
     ArrowHead direction ->
-      Svg.svg
-        []
-        [ directionArrowSvg hex direction ]
+      directionArrowSvg hex direction
     Starter direction ->
       Svg.svg
       []
