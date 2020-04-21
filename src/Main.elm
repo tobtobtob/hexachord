@@ -23,6 +23,7 @@ import TokenMap
 import Msg exposing (Msg(..))
 import HexMap
 import Colors
+import Encoder
 
 
 main = 
@@ -123,7 +124,8 @@ viewControls model =
     ]
     [ startButton model.state
     , tokenSelector model
-    , viewTempoSlider model ]
+    , viewTempoSlider model
+    , viewEncoder model ]
 
 
 
@@ -153,12 +155,18 @@ viewTempoSlider model =
       , Html.Attributes.value  <| String.fromInt model.tempo
       , Html.Events.onInput UpdateTempo 
       ] []
-    ] 
+    ]
+viewEncoder : Model -> Html Msg
+viewEncoder model =
+  Html.div [ Html.Attributes.style "padding-left" "10px"
+             , Html.Attributes.style "padding-right" "10px"]
+    [ Html.p [ Html.Attributes.style "margin" "0px"] [Html.text (Encoder.encodeTokenMap model.hexMap model.tokenMap) ]
+    ]
  
 view : Model -> Html Msg
 view model =
   Html.div
     []
     [ viewControls model
-    , viewMap model ]
+    , viewMap model]
 
