@@ -1,4 +1,4 @@
-module Tokens exposing (Token(..), isStarter, getDirection, svgToken)
+module Tokens exposing (Token(..), isStarter, getDirection, svgToken, encodeToken)
 
 import Directions exposing (Direction)
 import Hexagons.Hex exposing (Hex)
@@ -92,3 +92,8 @@ svgToken hex token =
       [ directionArrowSvg hex direction
       , starterHexSvg hex ]
 
+encodeToken : Token -> String
+encodeToken token =
+  case token of
+    ArrowHead direction -> "a"
+    Starter direction -> "s"
