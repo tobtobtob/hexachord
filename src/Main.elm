@@ -53,7 +53,7 @@ subscriptions model =
         Sub.none
 
 init : () -> (Model, Cmd Msg)
-init _ = ({ hexMap = rectangularPointyTopMap 7 12
+init _ = ({ hexMap = rectangularFlatTopMap 6 14
   , activators =  Activator.init
   , tokenMap = TokenMap.init
   , state = Paused 
