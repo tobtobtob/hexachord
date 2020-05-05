@@ -8,12 +8,12 @@ moveLocation direction location =
     (q, r, s ) = location
   in
     case direction of
-        MinorThirdDown -> (q, r + 1, s - 1)
-        MinorThirdUp -> (q, r - 1 , s + 1)
-        MajorThirdUp -> (q + 1 , r, s - 1)
-        MajorThirdDown -> (q - 1, r, s + 1)
-        FifthDown -> (q - 1, r + 1, s)
-        FifthUp -> (q + 1, r - 1, s)
+        FifthDown -> (q, r + 1, s - 1)
+        FifthUp -> (q, r - 1 , s + 1)
+        MinorThirdDown -> (q + 1 , r, s - 1)
+        MinorThirdUp -> (q - 1, r, s + 1)
+        MajorThirdDown -> (q - 1, r + 1, s)
+        MajorThirdUp -> (q + 1, r - 1, s)
 
 rotateClockWise : Direction -> Direction
 rotateClockWise direction =

@@ -46,9 +46,9 @@ noteOrder = Array.fromList [C, Cis, D, Eb, E, F, Fis, G, Ab, A, Bb, B]
 locationToTone : (Int, Int, Int) -> Tone
 locationToTone (q, r, s) =
   let
-    temp = q * 10 + r * 3 + s * 6
+    temp = q * -6 + r * -10 + s * -3
     interval = modBy 12 temp
-    octave = ((temp + 4 * 12 ) // 12) - 4
+    octave = ((temp + 6 * 12 ) // 12) - 4
   in 
     case Array.get interval noteOrder of
       Just note -> (note, octave)
