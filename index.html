@@ -22,10 +22,12 @@
         <p style="margin: 0px">Note length</p>
         <input type="range" min="1" max="100" value="50" class="slider" id="notelength">
       </div>
+      <button onclick="copyUrlToClipboard()">Copy link to this instrument!</button>
     </div>
     <div id="elm"></div>
     <script src=elm.js></script>
-    <script>var app = Elm.Main.init({
+    <script>
+    var app = Elm.Main.init({
       node: document.getElementById('elm'),
     })
     var audioContext  = new AudioContext();
@@ -44,6 +46,20 @@
       var filterFreq = Math.pow((audioContext.sampleRate/2.0-min), percentage)+min
       filter.type = "lowpass";
       filter.frequency.value = filterFreq;
+    }
+
+    function copyUrlToClipboard() {
+      /* Get the text field */
+      code = document.getElementById("instrument-code").value;
+      document.getElementById("instrument-code").value = window.location.hostname + "/?code=" + code
+      var copyText = document.getElementById("instrument-code");
+
+      /* Select the text field */
+      copyText.select();
+      copyText.setSelectionRange(0, 99999); /* For mobile devices */
+
+      /* Copy the text inside the text field */
+      document.execCommand("copy");
     }
     
     function start(frequency) {
@@ -71,6 +87,10 @@
     
     app.ports.startRaw.subscribe(function (frequency) {
       start(frequency);
-    });</script>
+    });
+    var urlParams = new URLSearchParams(window.location.search);
+    var code = urlParams.get('code');
+    app.ports.tokenMapFromQuery.send(code);
+    </script>
   </body>
 </html>
