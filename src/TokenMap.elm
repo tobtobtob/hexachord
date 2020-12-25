@@ -1,5 +1,7 @@
-module TokenMap exposing (TokenMap, init, hasToken, addOrRotateToken, viewTokens)
+module TokenMap exposing (TokenMap, hasToken, addOrRotateToken, viewTokens)
 
+import Url exposing (Url)
+import Url.Parser.Query exposing (string)
 import Directions
 import Dict
 import Hexagons.Map
@@ -11,10 +13,10 @@ import Util
 
 type alias TokenMap = Dict.Dict (Int, Int, Int) Token
 
-init : TokenMap
-init = 
-  Dict.fromList [((5, 1, -6), ArrowHead Directions.FifthDown)
-                , ((2, 4, -6), Starter Directions.FifthUp)]
+
+
+  --Dict.fromList [((5, 1, -6), ArrowHead Directions.FifthDown)
+  --              , ((2, 4, -6), Starter Directions.FifthUp)]
 
 hasToken : TokenMap -> (Int, Int, Int) -> Bool
 hasToken tokenMap location =

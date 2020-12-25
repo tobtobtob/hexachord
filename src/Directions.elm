@@ -1,5 +1,14 @@
 
-module Directions exposing (Direction(..), moveLocation, rotateClockWise, toString, fromString, rotatePoints)
+module Directions exposing (
+  Direction(..),
+  moveLocation,
+  rotateClockWise,
+  toString,
+  fromString,
+  rotatePoints,
+  encodeDirection,
+  decodeDirection)
+
 type Direction = MinorThirdUp | MinorThirdDown | FifthUp | FifthDown | MajorThirdUp | MajorThirdDown
 
 moveLocation : Direction -> (Int, Int, Int) -> (Int, Int, Int)
@@ -65,3 +74,26 @@ rotatePoints points direction =
         List.take len (List.drop 4 doubleHexList)
       MajorThirdUp ->
         List.take len (List.drop 5 doubleHexList)
+
+
+encodeDirection : Direction -> String
+encodeDirection direction =
+  case direction of
+    MinorThirdDown -> "a"
+    MinorThirdUp -> "b"
+    MajorThirdUp -> "c"
+    MajorThirdDown -> "d"
+    FifthDown -> "e"
+    FifthUp -> "f"
+
+
+decodeDirection : Char -> Direction
+decodeDirection char =
+  case char of
+    'a' -> MinorThirdDown
+    'b' -> MinorThirdUp
+    'c' -> MajorThirdUp
+    'd' -> MajorThirdDown
+    'e' -> FifthDown
+    'f' -> FifthUp
+    _ -> FifthUp

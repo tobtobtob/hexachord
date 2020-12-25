@@ -1,6 +1,4 @@
-
-
-module Main exposing (main)
+port module Main exposing (main)
 
 import Browser
 
@@ -24,6 +22,8 @@ import Msg exposing (Msg(..))
 import HexMap
 import Colors
 import Encoder
+import Encoder
+import Html.Events exposing (keyCode)
 
 
 main = 
@@ -33,6 +33,7 @@ main =
     , subscriptions = subscriptions
     , update = update
     }
+
 
 type State = Running | Paused
 
@@ -45,18 +46,33 @@ type alias Model =
   , tokenTool : Maybe Tokens.Token
   , tempo : Int }
 
+
+port tokenMapFromQuery : (String -> msg) -> Sub msg
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
-  case model.state of
-      Running ->
-        Time.every ((60 / toFloat model.tempo) * 1000) (\_ -> Tick)
-      Paused ->
-        Sub.none
+  let 
+    tick =
+      case model.state of
+        Running ->
+          Time.every ((60 / toFloat model.tempo) * 1000) (\_ -> Tick)
+        Paused ->
+          Sub.none
+  in
+    Sub.batch [tick, tokenMapFromQuery Msg.TokenMapCode]
+
+initTokenMap : Map -> TokenMap.TokenMap
+initTokenMap map =
+  Dict.fromList []
+
+createHexMap : Map
+createHexMap =
+  rectangularPointyTopMap 7 12
 
 init : () -> (Model, Cmd Msg)
-init _ = ({ hexMap = rectangularFlatTopMap 6 14
+init flags = ({ hexMap = createHexMap
   , activators =  Activator.init
-  , tokenMap = TokenMap.init
+  , tokenMap = initTokenMap createHexMap
   , state = Paused 
   , tokenTool = Just (Tokens.ArrowHead Directions.FifthUp)
   , tempo = 250} , Cmd.none)
@@ -97,6 +113,9 @@ update msg model =
          (model, Cmd.none)
     NoOp ->
       (model, Cmd.none)
+    TokenMapCode code ->
+      ( {model | tokenMap = Encoder.decodeTokenMap code model.hexMap}, Cmd.none)
+
 
 viewMap : Model -> Html Msg
 viewMap { hexMap, activators, tokenMap} =
@@ -158,10 +177,12 @@ viewTempoSlider model =
     ]
 viewEncoder : Model -> Html Msg
 viewEncoder model =
-  Html.div [ Html.Attributes.style "padding-left" "10px"
-             , Html.Attributes.style "padding-right" "10px"]
-    [ Html.p [ Html.Attributes.style "margin" "0px"] [Html.text (Encoder.encodeTokenMap model.hexMap model.tokenMap) ]
+  Html.input [
+    Html.Attributes.hidden True,
+    Html.Attributes.id "instrument-code",
+    Html.Attributes.value (Encoder.encodeTokenMap model.hexMap model.tokenMap)
     ]
+    []
  
 view : Model -> Html Msg
 view model =

@@ -1,4 +1,4 @@
-module Tokens exposing (Token(..), isStarter, getDirection, svgToken, encodeToken)
+module Tokens exposing (Token(..), isStarter, getDirection, svgToken, encodeToken, decodeToken)
 
 import Directions exposing (Direction)
 import Hexagons.Hex exposing (Hex)
@@ -78,7 +78,6 @@ starterHexSvg hex =
     , Svg.Attributes.points (Util.pointsToString(smallHexPoints hex))
     ]
     []
-    
 
 
 svgToken : Hex -> Token -> Svg Msg
@@ -95,5 +94,17 @@ svgToken hex token =
 encodeToken : Token -> String
 encodeToken token =
   case token of
-    ArrowHead direction -> "a"
-    Starter direction -> "s"
+    ArrowHead direction->
+      String.concat ["a", (Directions.encodeDirection direction)]
+    Starter direction ->
+      String.concat ["s", (Directions.encodeDirection direction)]
+
+decodeToken : String -> Maybe Token
+decodeToken str =
+  case (String.toList str) of
+    (a::b::_) ->
+      case a of
+        'a' -> Just (ArrowHead (Directions.decodeDirection b))
+        's' -> Just (Starter (Directions.decodeDirection b))
+        _ -> Nothing
+    _ -> Nothing
