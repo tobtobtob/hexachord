@@ -67,7 +67,7 @@ initTokenMap map =
 
 createHexMap : Map
 createHexMap =
-  rectangularPointyTopMap 7 12
+  rectangularFlatTopMap 6 14
 
 init : () -> (Model, Cmd Msg)
 init flags = ({ hexMap = createHexMap

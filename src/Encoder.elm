@@ -39,20 +39,19 @@ encodeTokenMap hexMap tokenMap =
 
 encodingStringHelper : Char -> List String -> List String
 encodingStringHelper newChar tokenList =
-  let
-    tail =
-      case List.tail tokenList of
-        Just list -> list
-        Nothing -> []
-  in
-    case (List.head tokenList) of
-      Just head ->
-        case (Char.isDigit newChar, String.all Char.isDigit head) of
-          (True, True) -> [(String.fromChar newChar) ++ head] ++ tail
-          (False, False) -> [(String.fromChar newChar) ++ head] ++ tail
+  case tokenList of
+    first::rest ->
+      case (Char.isDigit newChar, String.all Char.isDigit first) of
+          (True, True) -> 
+            [(String.fromChar newChar) ++ first] ++ rest
+          (False, False) -> 
+            case (String.length first) of
+              2 -> [String.fromChar newChar] ++ tokenList
+              _ -> [(String.fromChar newChar) ++ first] ++ rest
           _ -> [String.fromChar newChar] ++ tokenList
-      Nothing ->
-        [String.fromChar newChar]
+    _ ->
+      [String.fromChar newChar]
+
 
 stringToEncodingToken : String -> EncodingToken
 stringToEncodingToken str =
@@ -92,7 +91,8 @@ toToken (location, encodingToken) =
 decodeTokenMap : String -> Map -> TokenMap
 decodeTokenMap tokenStr hexMap =
   let
-    tokenList = List.map stringToEncodingToken (List.foldr encodingStringHelper [] (String.toList tokenStr))
+    tokenStrList = List.foldr encodingStringHelper [] (String.toList tokenStr)
+    tokenList = List.map stringToEncodingToken tokenStrList
     withEmpties = List.foldl addEmpties [] tokenList
     hexList = Dict.keys hexMap
     hexTokenList = List.map2 Tuple.pair hexList withEmpties
