@@ -22,7 +22,7 @@
         <p style="margin: 0px">Note length</p>
         <input type="range" min="1" max="100" value="50" class="slider" id="notelength">
       </div>
-      <button onclick="copyUrlToClipboard()">Copy link to this instrument!</button>
+      <button onclick="copyUrlToClipboard()">Copy a link to this instrument</button>
     </div>
     <div id="elm"></div>
     <script src=elm.js></script>
@@ -49,17 +49,20 @@
     }
 
     function copyUrlToClipboard() {
-      /* Get the text field */
       code = document.getElementById("instrument-code").value;
-      document.getElementById("instrument-code").value = window.location.hostname + "/?code=" + code
-      var copyText = document.getElementById("instrument-code");
+      var tmpElem = document.createElement("input")
+      tmpElem.style = "position: absolute; left: -1000px; top: -1000px";
 
+      // Add the input value to the temp element.
+      tmpElem.value = window.location.hostname + "/?code=" + code;
+      document.body.appendChild(tmpElem);
       /* Select the text field */
-      copyText.select();
-      copyText.setSelectionRange(0, 99999); /* For mobile devices */
+      tmpElem.select();
+      tmpElem.setSelectionRange(0, 99999); /* For mobile devices */
 
       /* Copy the text inside the text field */
       document.execCommand("copy");
+      document.body.removeChild(tmpElem);
     }
     
     function start(frequency) {
