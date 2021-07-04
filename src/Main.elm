@@ -67,7 +67,7 @@ initTokenMap map =
 
 createHexMap : Map
 createHexMap =
-  rectangularFlatTopMap 6 14
+  rectangularFlatTopMap 8 20
 
 init : () -> (Model, Cmd Msg)
 init flags = ({ hexMap = createHexMap
@@ -120,7 +120,7 @@ update msg model =
 viewMap : Model -> Html Msg
 viewMap { hexMap, activators, tokenMap} =
   Svg.svg
-    [ Svg.Attributes.viewBox "0 0 1800 1200" ]
+    [ Svg.Attributes.viewBox "0 0 2450 1500" ]
     (List.map HexMap.viewHex (Dict.values hexMap) ++
     Activator.viewActivators activators hexMap ++
     TokenMap.viewTokens tokenMap hexMap ++

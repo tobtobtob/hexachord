@@ -22,11 +22,20 @@
         <p style="margin: 0px">Note length</p>
         <input type="range" min="1" max="100" value="50" class="slider" id="notelength">
       </div>
+      <div id="outputcontainer" style="padding-left: 20px; padding-right: 20px;">
+        <p style="margin: 0px">Output</p>
+        <select id="outputselect">
+            <option value="hexachord">hexachord</option>
+          </select>
+      </div>
       <button onclick="copyUrlToClipboard()">Copy a link to this instrument</button>
+      
     </div>
     <div id="elm"></div>
     <script src=elm.js></script>
+    <script src="https://cdn.jsdelivr.net/npm/webmidi"></script>
     <script>
+    
     var app = Elm.Main.init({
       node: document.getElementById('elm'),
     })
@@ -37,7 +46,10 @@
     var noteLengthSlider = document.getElementById('notelength');
     
     function getNoteLength(){
-      return 2 * (0.01 * noteLengthSlider.value)
+        return 2 * (0.01 * noteLengthSlider.value)
+    }
+    function getMidiNoteLength(){
+        return getNoteLength() * 1000
     }
     
     function setFilterFrequency(filter){
@@ -64,8 +76,38 @@
       document.execCommand("copy");
       document.body.removeChild(tmpElem);
     }
+
+    function start(tone){
+        var outputSelect = document.getElementById('outputselect')
+        var selectedOutput = outputSelect.value
+        if (selectedOutput == 'hexachord'){
+            start_audio(toneToFreq(tone))
+            return
+        }
+        else {
+            console.log(tone)
+            sendMidiMessage(toneToMidiFreq(tone), 100, getMidiNoteLength())
+        }
+    }
+
+    function toneToFreq(tone) {
+        [note, octave] = tone.split(':')
+        octave = parseInt(octave)
+        noteMapper = {'A': 220.0, 'Bb': 233.08, 'B': 246.94,
+        'C': 130.81, 'C#': 138.59, 'D': 146.83, 'Eb': 155.56, 'E': 164.81,
+        'F': 174.61, 'F#': 185.0, 'G': 196.0, 'Ab': 207.65}
+        return noteMapper[note] * (2 ** (octave -2))
+    }
+
+    function toneToMidiFreq(tone) {
+        [note, octave] = tone.split(':')
+        noteMapper = {
+        'C': 0, 'C#': 1, 'D': 2, 'Eb': 3, 'E': 4,
+        'F': 5, 'F#': 6, 'G': 7, 'Ab': 8, 'A': 9, 'Bb': 10, 'B': 11}
+        return noteMapper[note] + (octave*12) + 24
+    }
     
-    function start(frequency) {
+    function start_audio(frequency) {
       var vco = audioContext.createOscillator();
       vco.type = waveformSelector.value;
       vco.frequency.value = frequency;
@@ -93,7 +135,74 @@
     });
     var urlParams = new URLSearchParams(window.location.search);
     var code = urlParams.get('code');
-    app.ports.tokenMapFromQuery.send(code);
+    if (code){
+        app.ports.tokenMapFromQuery.send(code);
+    }
+
+    midiOut = []
+    selectOut = document.getElementById('outputselect')
+
+    function connect() {
+      navigator.requestMIDIAccess()
+      .then(
+        (midi) => midiReady(midi),
+        (err) => console.log('Something went wrong', err)
+        );
+    }
+
+    function midiReady(midi) {
+      // Also react to device changes.
+        midi.addEventListener(
+          'statechange',
+          (event) => initDevices(event.target)
+        );
+        initDevices(midi); // see the next section!
+    }
+    function initDevices(midi) {
+      // Reset.
+      midiOut = [];
+      // MIDI devices that you send data to.
+      const outputs = midi.outputs.values();
+      for (let output = outputs.next(); output && !output.done; output = outputs.next()) {
+        midiOut.push(output.value);
+      }
+      displayDevices()
+    }
+    function displayDevices() {
+        console.log('display devices')
+        selectedValue = String(selectOut.value)
+        selectOut.innerHTML = '<option>hexachord</option>'
+        selectOut.innerHTML += midiOut.map(
+            device => {
+                if (device.name == selectedValue){
+                    return `<option selected="selected">${device.name}</option>`
+                }
+                else return `<option>${device.name}</option>`
+            }
+        ).join('')
+        //console.log(selectedValue)
+        //console.log(selectOut.innerHTML)
+    }
+    function sendMidiMessage(pitch, velocity, duration) {
+      const NOTE_ON = 0x90;
+      const NOTE_OFF = 0x80;
+        
+      const device = midiOut[selectOut.selectedIndex - 1];
+      const msgOn = [NOTE_ON, pitch, velocity];
+      const msgOff = [NOTE_OFF, pitch, velocity];
+
+      // First send the note on;
+      device.send(msgOn); 
+      console.log(duration)
+        
+      // Then send the note off. You can send this separately if you want 
+      // (i.e. when the button is released)
+      setTimeout(() => {
+          console.log('noteoff');
+          device.send(msgOff)
+      }, duration)
+    }
+    connect()
     </script>
   </body>
 </html>

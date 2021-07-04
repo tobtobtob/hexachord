@@ -48,7 +48,7 @@ locationToTone (q, r, s) =
   let
     temp = q * -6 + r * -10 + s * -3
     interval = modBy 12 temp
-    octave = ((temp + 6 * 12 ) // 12) - 4
+    octave = ((temp + 6 * 12 ) // 12) - 1
   in 
     case Array.get interval noteOrder of
       Just note -> (note, octave)
@@ -89,4 +89,4 @@ noteToString note =
 
 toneToString : Tone -> String
 toneToString (note, octave) =
-  noteToString note ++ String.fromInt octave
+  noteToString note ++ ":" ++ String.fromInt octave
